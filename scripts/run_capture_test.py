@@ -4,8 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import json
-import os
 import re
 import shutil
 import signal
@@ -97,6 +95,38 @@ def prompt_value(label: str, default: str) -> str:
     return answer or default
 
 
+def sanitize_token(value: str) -> str:
+    normalized = value.strip().lower()
+    normalized = normalized.replace("/", "-")
+    normalized = normalized.replace(" ", "-")
+    normalized = re.sub(r"[^a-z0-9._-]+", "-", normalized)
+    normalized = re.sub(r"-{2,}", "-", normalized)
+    return normalized.strip("-") or "unknown"
+
+
+def build_output_path(
+    output_arg: str | None,
+    pixel_format: str,
+    video_size: str,
+    framerate: str,
+    container: str,
+) -> str:
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    format_token = sanitize_token(pixel_format)
+    size_token = sanitize_token(video_size)
+    fps_token = sanitize_token(framerate)
+    filename = f"capture-test-{timestamp}-{size_token}-{fps_token}fps-{format_token}.{container}"
+
+    if not output_arg:
+        return filename
+
+    output_path = Path(output_arg).expanduser()
+    if output_path.exists() and output_path.is_dir():
+        return str(output_path / filename)
+
+    return str(output_path)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--device")
@@ -120,16 +150,17 @@ def parse_args() -> argparse.Namespace:
 def build_config(args: argparse.Namespace) -> dict[str, str | int]:
     devices = list_devices()
     device = args.device or choose_device(devices)
-    pixel_format = args.pixel_format or prompt_value("Pixel format", "MJPG")
+    pixel_format = args.pixel_format or prompt_value("Pixel format", "mjpeg")
     video_size = args.video_size or prompt_value("Video size", "1280x720")
     framerate = args.framerate or prompt_value("Frame rate", "60")
     duration = args.duration or int(prompt_value("Duration in seconds", "30"))
-
-    if args.output:
-        output = args.output
-    else:
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        output = f"capture-test-{timestamp}.{args.container}"
+    output = build_output_path(
+        args.output,
+        pixel_format=pixel_format,
+        video_size=video_size,
+        framerate=framerate,
+        container=args.container,
+    )
 
     return {
         "device": device,

@@ -48,7 +48,7 @@ python3 scripts/run_capture_test.py \
   --device /dev/video0 \
   --video-size 1280x720 \
   --framerate 60 \
-  --pixel-format MJPG \
+  --pixel-format mjpeg \
   --duration 30 \
-  --output /media/pi/CAPTURE/test.mkv
+  --output /media/pi/CAPTURE
 ```
