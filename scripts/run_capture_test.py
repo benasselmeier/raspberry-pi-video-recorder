@@ -136,6 +136,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--duration", type=int)
     parser.add_argument("--output")
     parser.add_argument("--video-codec", default="libx264")
+    parser.add_argument("--audio-device", default="default")
+    parser.add_argument("--audio-codec", default="aac")
+    parser.add_argument("--audio-bitrate", default="192k")
     parser.add_argument("--preset", default="veryfast")
     parser.add_argument("--crf", type=int, default=23)
     parser.add_argument(
@@ -170,6 +173,9 @@ def build_config(args: argparse.Namespace) -> dict[str, str | int]:
         "duration": duration,
         "output": output,
         "video_codec": args.video_codec,
+        "audio_device": args.audio_device,
+        "audio_codec": args.audio_codec,
+        "audio_bitrate": args.audio_bitrate,
         "preset": args.preset,
         "crf": args.crf,
     }
@@ -229,6 +235,9 @@ def print_config(config: dict[str, str | int]) -> None:
         "framerate",
         "duration",
         "video_codec",
+        "audio_device",
+        "audio_codec",
+        "audio_bitrate",
         "preset",
         "crf",
         "output",
@@ -251,9 +260,12 @@ def build_ffmpeg_command(config: dict[str, str | int]) -> list[str]:
         str(config["video_size"]),
         "-i",
         str(config["device"]),
+        "-f",
+        "pulse",
+        "-i",
+        str(config["audio_device"]),
         "-t",
         str(config["duration"]),
-        "-an",
         "-c:v",
         str(config["video_codec"]),
         "-preset",
@@ -262,6 +274,10 @@ def build_ffmpeg_command(config: dict[str, str | int]) -> list[str]:
         str(config["crf"]),
         "-pix_fmt",
         "yuv420p",
+        "-c:a",
+        str(config["audio_codec"]),
+        "-b:a",
+        str(config["audio_bitrate"]),
         "-y",
         str(config["output"]),
     ]

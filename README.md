@@ -7,7 +7,7 @@ Small utility scripts for exploring a Raspberry Pi based capture workflow.
 - `scripts/list_capture_formats.py`
   - Lists connected V4L2 capture devices and the video formats supported by a selected device.
 - `scripts/run_capture_test.py`
-  - Runs an interactive capture test with `ffmpeg` and prints a lightweight live status view.
+  - Runs an interactive capture test with `ffmpeg`, recording video from V4L2 and audio from PulseAudio.
 
 ## Intended Environment
 
@@ -18,12 +18,13 @@ These scripts are meant to run on Linux, especially Raspberry Pi OS.
 - Python 3.9+
 - `v4l2-ctl`
 - `ffmpeg`
+- PulseAudio or PipeWire with Pulse compatibility enabled
 
 On Raspberry Pi OS:
 
 ```bash
 sudo apt update
-sudo apt install -y v4l-utils ffmpeg python3
+sudo apt install -y v4l-utils ffmpeg python3 pulseaudio-utils
 ```
 
 ## Examples
